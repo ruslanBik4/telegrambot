@@ -1,4 +1,4 @@
-module github.com/SargtLa/telegrambot
+module github.com/ruslanBik4/telegrambot
 
 go 1.25
 
