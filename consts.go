@@ -66,6 +66,8 @@ const (
 
 const maxStack = 30
 
+var ErrBadWriter = errors.New("ErrBadWriter, it will be deleted from MultiWriter")
+
 const errMessBadBotParams = "TelegramBot struct param missing"
 
 type ErrBadBotParams struct {

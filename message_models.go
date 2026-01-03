@@ -54,5 +54,5 @@ func newtbMessageBuffer(msg []byte) *tbMessageBuffer {
 }
 
 func (messbuf *tbMessageBuffer) String() string {
-	return fmt.Sprintf("{messageText: %s, messageTime: %v}", string(messbuf.messageText), messbuf.messageTime)
+	return fmt.Sprintf("{messageText: %s, messageTime: %v}", b2s(messbuf.messageText), messbuf.messageTime)
 }

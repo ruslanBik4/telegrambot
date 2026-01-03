@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/ruslanBik4/logs"
 	"github.com/valyala/fasthttp"
 )
 
@@ -30,11 +29,11 @@ func (tb *TelegramBot) FastRequest(action string, params map[string]string) (err
 		err := tb.FastHTTPClient.DoTimeout(tb.Request, tb.Response, time.Minute)
 		switch err {
 		case fasthttp.ErrTimeout, fasthttp.ErrDialTimeout:
-			logs.DebugLog("eErrTimeout")
+			fmt.Println("eErrTimeout")
 			<-time.After(time.Minute * 2)
 			continue
 		case fasthttp.ErrNoFreeConns:
-			logs.DebugLog("ErrTimeout")
+			fmt.Println("ErrTimeout")
 			<-time.After(time.Minute * 2)
 			continue
 		case nil:
@@ -43,16 +42,16 @@ func (tb *TelegramBot) FastRequest(action string, params map[string]string) (err
 			switch tb.Response.StatusCode() {
 			case 400:
 				if strings.Contains(resp.Description, "message text is empty") {
-					logs.GetStack(3, fmt.Sprintf("%v (%s) %+v", ErrEmptyMessText, params["text"], resp))
+					fmt.Println(fmt.Sprintf("%v (%s) %+v", ErrEmptyMessText, params["text"], resp))
 					return nil, resp
 				} else if strings.Contains(resp.Description, "message is too long") {
-					logs.ErrorStack(errors.Wrap(ErrTooLongMessText, ""))
+					fmt.Println(errors.Wrap(ErrTooLongMessText, ""))
 					return nil, resp
 				}
-				logs.DebugLog("tb response 400, ResponseStruct:", resp.ErrorCode, resp.Description)
+				fmt.Println("tb response 400, ResponseStruct:", resp.ErrorCode, resp.Description)
 				return ErrBadTelegramBot, resp
 			case 404:
-				logs.DebugLog("tb response 404, ResponseStruct:", resp.ErrorCode, resp.Description)
+				fmt.Println("tb response 404, ResponseStruct:", resp.ErrorCode, resp.Description)
 				return ErrBadTelegramBot, resp
 			case 429:
 				<-time.After(time.Second * 1)
@@ -66,7 +65,7 @@ func (tb *TelegramBot) FastRequest(action string, params map[string]string) (err
 			default:
 				if !resp.Ok {
 					// todo: add parsing error response
-					logs.DebugLog(resp)
+					fmt.Println(resp)
 				}
 
 				if action == cmdSendMes {
@@ -78,7 +77,7 @@ func (tb *TelegramBot) FastRequest(action string, params map[string]string) (err
 
 		default:
 			if strings.Contains(err.Error(), "connection reset by peer") {
-				logs.DebugLog(err.Error())
+				fmt.Println(err.Error())
 				<-time.After(time.Minute * 2)
 				continue
 			} else {

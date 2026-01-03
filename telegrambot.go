@@ -4,17 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/acarl005/stripansi"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/pkg/errors"
-	"github.com/ruslanBik4/logs"
-	"github.com/valyala/fasthttp"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
+
+	"github.com/acarl005/stripansi"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/pkg/errors"
+	"github.com/valyala/fasthttp"
+	"gopkg.in/yaml.v3"
 )
 
 // TelegramKeyboard struct for telegram reply_markup keyboard
@@ -52,7 +52,7 @@ func NewTelegramBot(confPath string) (tb *TelegramBot, err error) {
 
 	err = yaml.Unmarshal(yamlFile, &tb)
 	if err != nil {
-		logs.DebugLog(" %+v", string(yamlFile))
+		fmt.Printf(" %s", yamlFile)
 		return nil, err
 	}
 
@@ -127,7 +127,7 @@ func (tb *TelegramBot) Write(msg []byte) (int, error) {
 
 	err, _ := tb.SendMessage(msg, false)
 	if err == ErrBadTelegramBot {
-		return -1, logs.ErrBadWriter
+		return -1, ErrBadWriter
 	}
 
 	if err != nil {
@@ -217,7 +217,7 @@ func (tb *TelegramBot) SendMessage(message []byte, markdown bool, keys ...interf
 		return err, nil
 	}
 
-	if string(tb.Request.Header.Method()) == "GET" {
+	if b2s(tb.Request.Header.Method()) == "GET" {
 		bytes.Replace(message, []byte(" "), []byte("%20"), -1)
 	}
 
@@ -238,9 +238,9 @@ func (tb *TelegramBot) SendMessage(message []byte, markdown bool, keys ...interf
 		if checkType == true {
 			keysJsonString, err := json.Marshal(replyMarkup)
 			if err != nil {
-				logs.ErrorStack(err)
+				fmt.Println(err)
 			} else {
-				requestParams["reply_markup"] = string(keysJsonString)
+				requestParams["reply_markup"] = b2s(keysJsonString)
 			}
 		}
 	}
@@ -249,7 +249,7 @@ func (tb *TelegramBot) SendMessage(message []byte, markdown bool, keys ...interf
 
 	switch messLen := len(message); {
 	case messLen == 0:
-		logs.ErrorStack(errors.Wrap(ErrEmptyMessText, b2s(message)))
+		fmt.Println(errors.Wrap(ErrEmptyMessText, b2s(message)))
 	case messLen+len(tb.instance) > maxMessLength:
 		prefix := " part 1 "
 
@@ -259,7 +259,7 @@ func (tb *TelegramBot) SendMessage(message []byte, markdown bool, keys ...interf
 
 			requestParams["text"], err = tb.getPartMes(r, prefix, messNum+1)
 			if err == ErrEmptyMessText {
-				logs.GetStack(2, fmt.Sprintf("%v (%s) part#%d", err, message, i))
+				fmt.Println(fmt.Sprintf("%v (%s) part#%d", err, message, i))
 				return
 			} else if err != nil {
 				return
